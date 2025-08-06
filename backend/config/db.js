@@ -8,5 +8,3 @@ export const connectDB = async () => {
         console.error('MongoDB connection error:', error);
     }
 }
-// chandrav306m
-// oX6zS4CR8tq6tr09
