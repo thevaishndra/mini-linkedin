@@ -63,7 +63,7 @@ export const signup = async (req, res) => {
 
 //login
 export const login = async (req, res) => {
-    const {email, password} = req.body();
+    const {email, password} = req.body;
 
     try {
       //find user email

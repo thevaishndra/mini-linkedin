@@ -1,7 +1,8 @@
 import axios from "axios";
 
-export const API = axios.create({
-  baseURL: process.env.REACT_APP_BACKEND_URL,
+let baseURL = import.meta.env.VITE_API_BASE_URL || "/api";
+export const axiosInstance = axios.create({
+  baseURL,
   withCredentials: true, // important for sending cookies like JWT
 });
 

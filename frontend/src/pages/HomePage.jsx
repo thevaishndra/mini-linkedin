@@ -2,12 +2,13 @@ import React, { useEffect } from "react";
 import { usePostStore } from "../store/usePostStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { LoaderCircle } from "lucide-react";
-import { Navbar } from "../components/Navbar.jsx";
-import { CreatePost } from "../components/CreatePost";
-import { PostCard } from "../components/PostCard";
+import Navbar from "../components/Navbar.jsx";
+import CreatePost from "../components/CreatePost";
+import PostCard from "../components/PostCard";
 
 const Home = () => {
-  const { getAllPublicPosts, publicPosts, isLoadingPosts } = usePostStore();
+  // Changed from publicPosts to posts
+  const { getAllPublicPosts, posts, isLoadingPosts } = usePostStore();
   const { authUser } = useAuthStore();
 
   useEffect(() => {
@@ -32,8 +33,8 @@ const Home = () => {
         ) : (
           // Public Posts
           <div className="space-y-4">
-            {publicPosts.length > 0 ? (
-              publicPosts.map((post) => <PostCard key={post._id} post={post} />)
+            {posts && posts.length > 0 ? (
+              posts.map((post) => <PostCard key={post._id} post={post} />)
             ) : (
               <p className="text-center text-gray-500">No posts yet.</p>
             )}

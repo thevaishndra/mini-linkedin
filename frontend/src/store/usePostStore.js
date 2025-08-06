@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import API from "../lib/axios.js";
+import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 
 export const usePostStore = create((set) => ({
-  posts: [],
+  posts: [], // This is your public posts array
   userPosts: [],
   isLoadingPosts: false,
   isLoadingPost: false,
@@ -13,7 +13,7 @@ export const usePostStore = create((set) => ({
   createPost: async (data) => {
     set({ isCreatingPost: true });
     try {
-      const res = await API.post("/posts", data);
+      const res = await axiosInstance.post("/posts", data);
       set((state) => ({ posts: [res.data, ...state.posts] }));
       toast.success("Post created successfully");
     } catch (error) {
@@ -23,12 +23,11 @@ export const usePostStore = create((set) => ({
     }
   },
 
-
-  // Get all public posts
-  getAllPosts: async () => {
+  // Get all public posts (renamed from getAllPosts to getAllPublicPosts)
+  getAllPublicPosts: async () => {
     set({ isLoadingPosts: true });
     try {
-      const res = await API.get("/posts");
+      const res = await axiosInstance.get("/posts");
       set({ posts: res.data });
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to fetch posts");
@@ -37,12 +36,11 @@ export const usePostStore = create((set) => ({
     }
   },
 
-
   // Get posts by specific user
   getPostsByUser: async (userId) => {
     set({ isLoadingPost: true });
     try {
-      const res = await API.get(`/posts/user/${userId}`);
+      const res = await axiosInstance.get(`/posts/user/${userId}`);
       set({ userPosts: res.data });
     } catch (error) {
       toast.error(
