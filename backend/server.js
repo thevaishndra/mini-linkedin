@@ -21,6 +21,7 @@ app.use(
   })
 );
 
+
 //API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);

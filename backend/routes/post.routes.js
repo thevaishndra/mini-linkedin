@@ -4,7 +4,7 @@ import { protectRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/create", protectRoute, createPost);
+router.post("/", protectRoute, createPost);
 router.get("/", getAllPublicPosts);
 router.get("/user/:userId", getUserPosts);
 

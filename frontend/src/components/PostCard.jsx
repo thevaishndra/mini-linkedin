@@ -10,7 +10,7 @@ const PostCard = ({ post }) => {
         <div className="avatar">
           <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
             <img
-              src={author?.profilePicture || "/default-avatar.png"}
+              src={post.author?.profilePicture || "/default-avatar.png"}
               alt="profile"
             />
           </div>
@@ -21,18 +21,18 @@ const PostCard = ({ post }) => {
           {/* Name, Bio, Timestamp */}
           <div className="mb-1">
             <h2 className="font-semibold text-lg">
-              {author?.name || "Unknown"}
+              {post.author?.fullName || "Unknown"}
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               {author?.bio || "No bio provided"}
             </p>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-300">
               {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
             </p>
           </div>
 
           {/* Content */}
-          <p className="text-base text-gray-700 mt-2">{content}</p>
+          <p className="text-base text-gray-300 mt-2">{content}</p>
         </div>
       </div>
     </div>

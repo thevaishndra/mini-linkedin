@@ -1,22 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Camera, LoaderCircle, CheckCircle, XCircle } from "lucide-react";
+import { Camera, Mail, User, LoaderCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
-export const ProfilePage = () => {
+const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
-  const [name, setName] = useState("");
-  const [bio, setBio] = useState("");
-  const [selectedImg, setSelectedImg] = useState(null);
-  const [isSavingBio, setIsSavingBio] = useState(false);
-  const [isSavingName, setIsSavingName] = useState(false);
-  const fileInputRef = React.useRef(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    bio: "",
+    profilePicture: "",
+  });
 
-  // Initialize form fields with user data
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Set form values on load
   useEffect(() => {
     if (authUser) {
-      setName(authUser.name || "");
-      setBio(authUser.bio || "");
+      setFormData({
+        name: authUser.fullName || "",
+        bio: authUser.bio || "",
+        profilePic: authUser.profilePic || "",
+      });
     }
   }, [authUser]);
 
@@ -24,58 +32,54 @@ export const ProfilePage = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate image size (e.g., 2MB max)
     if (file.size > 2 * 1024 * 1024) {
       toast.error("Image size should be less than 2MB");
       return;
     }
 
+    setIsLoading(true);
     const reader = new FileReader();
-    reader.readAsDataURL(file);
 
     reader.onload = async () => {
       try {
         const base64Image = reader.result;
-        setSelectedImg(base64Image);
-        await updateProfile({ profilePic: base64Image });
-        toast.success("Profile picture updated successfully!");
+        setFormData((prev) => ({ ...prev, profilePic: base64Image }));
       } catch (error) {
-        toast.error(
-          error?.response?.data?.message || "Failed to update profile picture"
-        );
+        toast.error("Error processing image");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     reader.onerror = () => {
       toast.error("Error reading image file");
+      setIsLoading(false);
     };
+
+    reader.readAsDataURL(file);
   };
 
-  const handleBioSave = async () => {
-    if (!bio.trim()) return;
-
-    setIsSavingBio(true);
-    try {
-      await updateProfile({ bio });
-      toast.success("Bio updated successfully!");
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to update bio");
-    } finally {
-      setIsSavingBio(false);
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleNameSave = async () => {
-    if (!name.trim()) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
 
-    setIsSavingName(true);
     try {
-      await updateProfile({ name });
-      toast.success("Name updated successfully!");
+      await updateProfile({
+        fullName: formData.name,
+        bio: formData.bio,
+        profilePic: formData.profilePic,
+      });
+      toast.success("Profile updated successfully!");
+      navigate("/HomePage");
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to update name");
+      toast.error("Failed to update profile");
     } finally {
-      setIsSavingName(false);
+      setIsSaving(false);
     }
   };
 
@@ -88,110 +92,107 @@ export const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 flex flex-col items-center px-4 py-10">
-      {/* Profile Picture Section */}
-      <div className="relative group">
-        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary relative">
-          <img
-            src={selectedImg || authUser.profilePic || "/avatar.png"}
-            alt="Profile"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.src = "/avatar.png";
-            }}
-          />
+    <div className="min-h-screen flex items-center justify-center bg-base-200 p-4 pt-20">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md sm:max-w-lg md:max-w-xl  p-6 sm:p-8 rounded-xl shadow-lg space-y-6"
+      >
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-primary">Edit Profile</h1>
+          <p className="text-gray-500">Update your information below</p>
+        </div>
 
-          {/* Camera overlay */}
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-            <label className="flex flex-col items-center justify-center text-white">
-              <Camera className="w-6 h-6" />
-              <span className="text-xs mt-1">Change Photo</span>
+        {/* Profile Picture */}
+        <div className="flex flex-col items-center gap-4 mt-6">
+          <div className="relative">
+            <img
+              src={formData.profilePic || "/avatar.png"}
+              alt="Profile"
+              className="size-28 sm:size-32 md:size-36 rounded-full object-cover border-4 border-primary"
+              onError={(e) => {
+                e.target.src = "/avatar.png";
+              }}
+            />
+
+            <button
+              type="button"
+              className="absolute -bottom-2 -right-2 bg-primary rounded-full p-2 hover:bg-primary-focus transition-all"
+              onClick={() => fileInputRef.current.click()}
+              disabled={isLoading}
+            >
+              <Camera className="w-5 h-5 text-white" />
               <input
                 type="file"
                 ref={fileInputRef}
                 className="hidden"
                 accept="image/*"
                 onChange={handleImageUpload}
-                disabled={isUpdatingProfile}
               />
-            </label>
-          </div>
-        </div>
-
-        <p className="text-sm text-gray-500 text-center mt-2">
-          {isUpdatingProfile ? (
-            <span className="flex items-center justify-center gap-1">
-              <LoaderCircle className="w-4 h-4 animate-spin" />
-              Uploading...
-            </span>
-          ) : (
-            "Hover to change your photo"
-          )}
-        </p>
-      </div>
-
-      {/* Profile Information */}
-      <div className="mt-8 w-full max-w-md space-y-6">
-        {/* Editable Name Field */}
-        <div className="space-y-1">
-          <label className="text-sm text-gray-500">Name</label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              className="flex-1 input input-bordered"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-            />
-            <button
-              className="btn btn-primary"
-              onClick={handleNameSave}
-              disabled={isSavingName || name === authUser.name}
-            >
-              {isSavingName ? (
-                <LoaderCircle className="w-4 h-4 animate-spin" />
-              ) : (
-                "Save"
-              )}
             </button>
           </div>
+
+          <p className="text-sm text-gray-500 text-center mt-1">
+            {isLoading ? "Uploading..." : "Click camera icon to change photo"}
+          </p>
         </div>
 
-        {/* Non-editable Email */}
-        <div className="space-y-1">
-          <label className="text-sm text-gray-500">Email</label>
+        {/* Name Field */}
+        <div className="form-control">
+          <label className="label text-sm flex gap-2 items-center text-gray-600">
+            <User className="w-4 h-4" />
+            Full Name
+          </label>
           <input
             type="text"
+            name="name"
             className="input input-bordered w-full"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Your name"
+          />
+        </div>
+
+        {/* Email Field (readonly) */}
+        <div className="form-control">
+          <label className="label text-sm flex gap-2 items-center text-gray-600">
+            <Mail className="w-4 h-4" />
+            Email Address
+          </label>
+          <input
+            type="text"
+            className="input input-bordered w-full bg-gray-100"
             value={authUser.email}
             readOnly
             disabled
           />
         </div>
 
-        {/* Editable Bio */}
-        <div className="space-y-1">
-          <label className="text-sm text-gray-500">Bio</label>
+        {/* Bio Field */}
+        <div className="form-control">
+          <label className="label text-sm text-gray-600">Bio</label>
           <textarea
+            name="bio"
             className="textarea textarea-bordered w-full"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
+            value={formData.bio}
+            onChange={handleChange}
             placeholder="Tell us about yourself..."
             rows={4}
           />
-          <button
-            className="btn btn-primary mt-2"
-            onClick={handleBioSave}
-            disabled={isSavingBio || bio === authUser.bio}
-          >
-            {isSavingBio ? (
-              <LoaderCircle className="w-4 h-4 animate-spin" />
-            ) : (
-              "Save Bio"
-            )}
-          </button>
         </div>
-      </div>
+
+        {/* Save Button */}
+        <button
+          type="submit"
+          className="btn btn-primary w-full mt-4"
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <LoaderCircle className="animate-spin w-5 h-5" />
+          ) : (
+            "Save Changes"
+          )}
+        </button>
+      </form>
     </div>
   );
 };

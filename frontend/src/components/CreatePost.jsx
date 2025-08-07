@@ -4,7 +4,7 @@ import { usePostStore } from "../store/usePostStore";
 
 const CreatePost = () => {
   const { authUser } = useAuthStore();
-  const { createPost, getAllPosts } = usePostStore();
+  const { createPost, getAllPublicPosts } = usePostStore();
   const [isExpanded, setIsExpanded] = useState(false);
   const [content, setContent] = useState("");
 
@@ -12,8 +12,8 @@ const CreatePost = () => {
     if (!content.trim()) return;
 
     try {
-      await createPost({ content }); // <-- send object not string
-      await getAllPosts(); // <-- refresh posts after posting
+      await createPost({ content, userId: authUser?._id }); // <-- send object not string
+      await getAllPublicPosts(); // <-- refresh posts after posting
       setContent("");
       setIsExpanded(false);
     } catch (error) {

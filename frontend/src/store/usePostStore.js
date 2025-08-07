@@ -14,9 +14,16 @@ export const usePostStore = create((set) => ({
     set({ isCreatingPost: true });
     try {
       const res = await axiosInstance.post("/posts", data);
-      set((state) => ({ posts: [res.data, ...state.posts] }));
+
+      set((state) => ({
+        posts: Array.isArray(state.posts)
+          ? [res.data.post, ...state.posts]
+          : [res.data.post],
+      }));
+
       toast.success("Post created successfully");
     } catch (error) {
+      console.error("Error while creating post:", error);
       toast.error(error?.response?.data?.message || "Failed to create post");
     } finally {
       set({ isCreatingPost: false });
@@ -28,9 +35,16 @@ export const usePostStore = create((set) => ({
     set({ isLoadingPosts: true });
     try {
       const res = await axiosInstance.get("/posts");
-      set({ posts: res.data });
+      set({ posts: res.data.posts });
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to fetch posts");
+      console.error("Error while fetching public posts:");
+      if (error.response) {
+        console.error("Response Data:", error.response.data);
+        console.error("Status:", error.response.status);
+      } else {
+        console.error("Error while creating post:", error);
+      }
+
     } finally {
       set({ isLoadingPosts: false });
     }
@@ -43,9 +57,13 @@ export const usePostStore = create((set) => ({
       const res = await axiosInstance.get(`/posts/user/${userId}`);
       set({ userPosts: res.data });
     } catch (error) {
-      toast.error(
-        error?.response?.data?.message || "Failed to fetch user's posts"
-      );
+      console.error("Error while fetching user posts:");
+      if (error.response) {
+        console.error("Response Data:", error.response.data);
+        console.error("Status:", error.response.status);
+      } else {
+        console.error("Error Message:", error.message);
+      }
     } finally {
       set({ isLoadingPost: false });
     }
