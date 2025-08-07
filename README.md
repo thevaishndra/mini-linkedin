@@ -96,14 +96,8 @@ npm run dev
 
 ## 📦 Deployment
 
-- **Frontend:** https://mini-linkedin-frontend.vercel.app/
-- **Backend:** https://mini-linkedin-backend.onrender.com/
-
----
-
-## 📷 Screenshots
-
-_Add screenshots here showing the homepage, login page, profile page, and post feed._
+- **Frontend:** [https://mini-linkedin-frontend.vercel.app/](https://mini-linkedin-1-4t41.onrender.com)
+- **Backend:** [https://mini-linkedin-backend.onrender.com/](https://mini-linkedin-143i.onrender.com)
 
 ---
 
@@ -118,7 +112,7 @@ _Add screenshots here showing the homepage, login page, profile page, and post f
 
 ## 🧑‍💻 Author
 
-Made with ❤️ by [Your Name](https://github.com/your-username)
+Made with ❤️ by [thevaishndra](https://github.com/thevaishndra)
 
 ---
 
